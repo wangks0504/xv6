@@ -547,6 +547,7 @@ forkret(void)
 void
 sleep(void *chan, struct spinlock *lk)
 {
+  // 获取当前进程的结构体指针(保存了当前程序的状态)
   struct proc *p = myproc();
   
   // Must acquire p->lock in order to
@@ -555,14 +556,17 @@ sleep(void *chan, struct spinlock *lk)
   // guaranteed that we won't miss any wakeup
   // (wakeup locks p->lock),
   // so it's okay to release lk.
-
+  // 把当前程序的结构体上锁防止别人修改
   acquire(&p->lock);  //DOC: sleeplock1
+  // 释放传入的锁
   release(lk);
 
   // Go to sleep.
+  // chan 是睡眠的条件 改变时 睡眠终止
   p->chan = chan;
+  // 状态是睡眠
   p->state = SLEEPING;
-
+  // 让 cpu 执行其他程序
   sched();
 
   // Tidy up.
